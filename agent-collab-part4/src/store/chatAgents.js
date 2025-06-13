@@ -4,7 +4,7 @@ import { $agents } from './agents'
 export const $selectedChatAgents = atom([])
 
 export const $chatAgents = computed([$selectedChatAgents, $agents], (ids, agents) => {
-  return agents.filter((e) => ids.includes(e.id))
+  return ids.map((id) => agents.find((agent) => agent.id === id))
 })
 
 export const selectChatAgent = (checked, id) => {

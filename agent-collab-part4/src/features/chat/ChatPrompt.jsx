@@ -40,7 +40,6 @@ function ChatPrompt() {
   const [isPromptEmpty, setIsPromptEmpty] = useState(true)
 
   const chatAgents = useStore($chatAgents)
-  const messages = useStore($messages)
 
   const onTextChange = () => {
     const val = promptRef.current.value || ''
@@ -49,40 +48,42 @@ function ChatPrompt() {
 
   const onSendPrompt = async () => {
     const prompt = promptRef.current.value
-    console.log('onSendPrompt', prompt)
+    if (!prompt.trim()) return
 
-    const contextInputs = constructCtxArray(messages)
-
+    // Ajouter le message utilisateur
     addMessage({
       role: 'user',
       content: prompt,
       id: Math.random().toString(),
     })
 
-    // AI response
+    const messages = $messages.get()
+    const contextInputs = constructCtxArray(messages)
+
+    // Ajouter un message "assistant" vide
     const response = {
       role: 'assistant',
       content: '',
       id: Math.random().toString(),
-      completed: false, // not complete yet
+      completed: false,
     }
-
-    // add AI response to chat messages
     addMessage(response)
 
+    // Sélection des agents
     const steps = isEmpty(chatAgents) ? [null] : chatAgents
 
+    // Parcours de chaque agent sélectionné
     for (let i = 0, len = steps.length; i < len; i++) {
       const agent = steps[i]
 
       let cloned = $messages.get()
 
-      // call agent
-      const stream = await onAgent({ prompt: prompt, agent, contextInputs })
-      for await (const part of stream) {
-        const token = part.choices[0]?.delta?.content || ''
+      const stream = await onAgent({ agent, prompt, contextInputs })
 
+      for await (const part of stream) {
+        const token = part.choices[0]?.delta?.content ?? ''
         const last = cloned.at(-1)
+
         cloned[cloned.length - 1] = {
           ...last,
           content: last.content + token,
@@ -91,14 +92,15 @@ function ChatPrompt() {
         updateMessages([...cloned])
       }
 
+      // Marquer comme complété
       const last = cloned.at(-1)
-
       cloned[cloned.length - 1] = {
         ...last,
         completed: true,
       }
+      updateMessages([...cloned])
 
-      // add next prompt to chat
+      // Ajouter un nouvel assistant vide si ce n'est pas le dernier agent
       if (steps.length > 0 && i !== steps.length - 1) {
         cloned = [
           ...cloned,
@@ -110,10 +112,9 @@ function ChatPrompt() {
           },
         ]
       }
-
-      updateMessages([...cloned])
     }
 
+    // Nettoyage une fois tous les agents traités
     promptRef.current.value = ''
     setIsPromptEmpty(true)
   }
@@ -123,45 +124,47 @@ function ChatPrompt() {
       justify='center'
       mt='auto'
       width='100%'>
-      <PromptContainer
-        align='center'
-        direction='column'>
-        <PromptArea
-          ref={promptRef}
-          id='Todo'
-          placeholder='Comment puis-je aider...'
-          onChange={onTextChange}
-          onKeyDown={(e) => {
-            const canSend = !isPromptEmpty && e.key === 'Enter'
-            const mod = e.metaKey || e.ctrlKey || e.altKey || e.shiftKey
-            if (canSend && !mod) {
-              // Prevent default behavior of Enter key
-              e.preventDefault()
-              onSendPrompt()
-            }
-          }}
-        />
-        <Flex
-          justify='start'
+      <Flex
+        direction='column'
+        gap='3'
+        width='100%'>
+        <PromptContainer
           align='center'
-          width='100%'>
+          direction='column'>
+          <PromptArea
+            ref={promptRef}
+            placeholder='Comment puis-je aider...'
+            onChange={onTextChange}
+            onKeyDown={(e) => {
+              const canSend = !isPromptEmpty && e.key === 'Enter'
+              const mod = e.metaKey || e.ctrlKey || e.altKey || e.shiftKey
+              if (canSend && !mod) {
+                e.preventDefault()
+                onSendPrompt()
+              }
+            }}
+          />
           <Flex
             justify='start'
             align='center'
             width='100%'>
-            {/* TODO Add Agent Select Menu */}
+            {/* Tu peux ajouter des contrôles ici */}
           </Flex>
+          <Flex
+            justify='end'
+            width='100%'>
+            <Button
+              disabled={isPromptEmpty}
+              onClick={onSendPrompt}>
+              <PaperPlaneIcon />
+            </Button>
+          </Flex>
+        </PromptContainer>
+        <Flex>
+          <AgentMenu />
+          <AgentSelect />
         </Flex>
-        <Flex
-          justify='end'
-          width='100%'>
-          <Button
-            disabled={isPromptEmpty}
-            onClick={onSendPrompt}>
-            <PaperPlaneIcon />
-          </Button>
-        </Flex>
-      </PromptContainer>
+      </Flex>
     </Flex>
   )
 }

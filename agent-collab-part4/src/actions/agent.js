@@ -29,6 +29,7 @@ export const onAgent = async function ({
   prompt,
   canStream = true,
   contextInputs = [],
+  canThink = false
 }) {
   const aiClient = await getAIClient()
 
@@ -36,8 +37,9 @@ export const onAgent = async function ({
     agent = aiClient.cfg
   }
 
-  console.log('onAgent agent', agent)
-  console.log('onAgent prompt', prompt)
+  if(!canThink) {
+    agent.role += '\n no_think';
+  }
 
   agent.role = `${agent.role}
                 Respond in the same language of the user.

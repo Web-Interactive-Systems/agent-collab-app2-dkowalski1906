@@ -76,7 +76,6 @@ export function AgentSelect() {
 
   const handleRemove = (idToRemove) => {
     const newSelected = selected.filter((id) => id !== idToRemove)
-    console.log('handleRemove', idToRemove, newSelected)
     setSelectChatAgents(newSelected)
   }
 

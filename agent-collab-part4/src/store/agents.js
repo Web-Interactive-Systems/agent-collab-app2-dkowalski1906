@@ -6,30 +6,23 @@ export const $selectedAgentId = atom('')
 export const $agents = atom([
   {
     id: Math.random().toString(),
-    emoji: '😀',
-    title: 'Space Scifi Writer',
-    role: 'your are a wonderful writer',
+    emoji: '📝',
+    title: 'Créateur de tâches projet',
+    role: "Tu es un assistant qui crée des tâches détaillées pour un projet d'entreprise.",
     response_format: 'text',
-    temperature: 0.1,
-    desired_response: 'Exo-planets epic scifi stories',
+    temperature: 0.5,
+    desired_response:
+      "Liste des tâches claires et structurées pour faire avancer un projet d'entreprise.",
   },
   {
     id: Math.random().toString(),
-    emoji: '🤠',
-    title: 'Scientist',
-    role: 'your are a wonderful scientist',
+    emoji: '🛠️',
+    title: 'Correcteur de bugs',
+    role: 'Tu es un expert en correction de bugs dans le code.',
     response_format: 'text',
-    temperature: 0.7,
-    desired_response: 'analysis and respond using science-based facts',
-  },
-  {
-    id: Math.random().toString(),
-    emoji: '🤠',
-    title: 'Emojier',
-    role: 'your are a wonderful emoji text enhencer',
-    response_format: 'text',
-    temperature: 0.7,
-    desired_response: 'add a lot of emoji to content',
+    temperature: 0.3,
+    desired_response:
+      'Analyse les bugs et propose des corrections précises et efficaces.',
   },
 ])
 
